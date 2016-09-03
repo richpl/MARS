@@ -38,12 +38,42 @@ class Core:
 
     """
     Returns the instruction at the specified
-    word position in the core, represented as a string.
-    An empty string denotes an unallocated word.
+    word position in the core, represented as a triple
+    held within the list. The triple consists of
+    opcode, A-field operand and B-field operand.
+    Each component of the list is a string.
+    An empty list denotes an unallocated word.
     """
     @property
     def instruction(self, index):
         return self.core[index]
+
+    """
+    Returns the A-field of the instruction
+    at the specified word position in the core,
+    represented as a string.
+    """
+    @property
+    def a_field(self, index):
+        return self.core[index][1]
+
+    """
+    Returns the B-field of the instruction
+    at the specified word position in the core,
+    represented as a string.
+    """
+    @property
+    def b_field(self, index):
+        return self.core[index][2]
+
+    """
+    Returns the opcode of the instruction
+    at the specified word position in the core,
+    represented as a string.
+    """
+    @property
+    def opcode(self, index):
+        return self.core[index][0]
 
     """
     Puts the specified instruction in the
@@ -60,4 +90,4 @@ class Core:
     placed at the Core position specified by the index.
     """
     def add_program(self, instructions, index):
-        #TODO
+        # TODO

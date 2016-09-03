@@ -1,8 +1,12 @@
 #! /usr/bin/python
 
 """
-This class represents a Red Code process
-running within the Core.
+This class represents a Red Code program
+running within the Core. The program may
+have multiple execution threads associated
+with it, each of which is represented by
+an instruction pointer referencing a
+particular word position in the core.
 """
 
 class Program:
@@ -29,6 +33,12 @@ class Program:
         else:
             self.pc.append(index)
 
-
+    """
+    Returns a list of the program counters
+    associated with all of the executing threads
+    for this program.
+    """
+    def pcs(self):
+        return pc
 
 
