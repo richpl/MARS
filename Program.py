@@ -11,10 +11,12 @@ particular word position in the core.
 
 class Program:
 
-    # A list of program counters to
-    # support multithreaded operation, where
-    # each program counter is a word position
-    # in the core
+    """
+    A list of program counters to
+    support multithreaded operation, where
+    each program counter is a word position
+    in the core.
+    """
     pc = []
 
     """
@@ -26,19 +28,40 @@ class Program:
     index will cause an IndexError
     to be raised.
     """
-    def __init__(self, core, index):
+    def __init__(self, core, address):
 
-        if index < 0:
+        if address < 0 or address > core.CORESIZE:
             raise IndexError("Invalid core address")
         else:
-            self.pc.append(index)
+            self.pc.append(address)
 
     """
     Returns a list of the program counters
     associated with all of the executing threads
     for this program.
     """
-    def pcs(self):
-        return pc
+    @property
+    def pc(self):
 
+        return self.pc
+
+    """
+    Modifies the specified program counter
+    to the new core address. Raises an
+    IndexError if the specified core address
+    is not valid.
+
+    The index provides an offset into the list
+    of program counters to select the one to be
+    modified, while the address is the new core
+    address to which it is to be set.
+    """
+    def set_pc(self, index, address, core):
+
+        if index < 0 or index > len(self.pc):
+            raise IndexError("Invalid PC offset")
+        elif address < 0 or address > core.CORESIZE:
+            raise IndexError("Invalid core address")
+        else:
+            self.pc[index] = address
 

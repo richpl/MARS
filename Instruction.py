@@ -182,6 +182,7 @@ class Instruction:
     """
     @classmethod
     def a_field_val(self, instruction):
+
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
@@ -207,6 +208,7 @@ class Instruction:
     """
     @classmethod
     def b_field_val(self, instruction):
+
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
