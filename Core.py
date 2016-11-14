@@ -8,19 +8,22 @@ core wraps so that writing a sequence of words that overruns
 the end of the core will result in the write wrapping around
 to the beginning of the core.
 
+>>> from core import Core
+>>> from instruction import Instruction
 >>> core = Core(5000)
 >>> core.put([Instruction.MOV, 0, 1], 4000)
 >>> print (core.CORESIZE)
 5000
 >>> print (core.instruction(4000))
-[mov, 0, 1]
+['mov', 0, 1]
+>>> program = ['' for index in range(2)]
 >>> program[0] = [Instruction.MOV, 0, 1]
 >>> program[1] = [Instruction.MOV, 1, 0]
 >>> core.add_program(program, 4500)
 >>> print (core.instruction(4500))
-[mov, 0, 1]
+['mov', 0, 1]
 >>> print (core.instruction(4501))
-[mov, 1, 0]
+['mov', 1, 0]
 """
 
 
@@ -29,21 +32,26 @@ class Core:
     """
     Default CORESIZE is 10000 words.
     """
-    CORESIZE = 10000
+    __CORESIZE = 10000
+
+    """
+    The actual core, represented as a list.
+    Empty strings represent unallocated words
+    within the core. Allocated words will
+    be represented as strings containing
+    instructions.
+    """
+    __core = ['' for index in range(__CORESIZE)]
 
     """
     Initialise the core with a specified size.
     """
     def __init__(self, size):
 
-        self.CORESIZE = size
+        assert isinstance(size, int)
+        self.__CORESIZE = size
 
-        # The actual core, represented as a list.
-        # Empty strings represent unallocated words
-        # within the core. Allocated words will
-        # be represented as strings containing
-        # instructions.
-        core = ['' for index in range(self.CORESIZE)]
+        self.__core = ['' for index in range(self.__CORESIZE)]
 
     """
     Returns the size of the core.
@@ -51,7 +59,7 @@ class Core:
     @property
     def CORESIZE(self):
 
-        return self.CORESIZE
+        return self.__CORESIZE
 
     """
     Returns the instruction at the specified
@@ -61,11 +69,10 @@ class Core:
     Each component of the list is a string.
     An empty list denotes an unallocated word.
     """
-    @property
     def instruction(self, address):
 
         assert isinstance(address, int)
-        return self.core[address]
+        return self.__core[address]
 
     """
     Puts the specified instruction in the
@@ -75,7 +82,7 @@ class Core:
     """
     def put(self, instruction, address):
 
-        self.core[address] = instruction
+        self.__core[address] = instruction
 
     """
     Add a program to the Core, specified as a list
@@ -100,11 +107,11 @@ class Core:
             assert isinstance(instructions, list)
             for instruction in instructions:
                 if current_address < self.CORESIZE:
-                    self.core[current_address] = instruction
+                    self.__core[current_address] = instruction
                     current_address = current_address + 1
                 else:
                     # We need to wrap around
-                    self.core[0] = instruction
+                    self.__core[0] = instruction
                     current_address = 1
 
     if __name__ == "__main__":

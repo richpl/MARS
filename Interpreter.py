@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import Instruction
+import instruction
 
 """
 This class implements a red code interpreter that
@@ -40,11 +40,11 @@ class Interpreter:
             # Break out instruction opcode and
             # operands
             try:
-                opcode = Instruction.opcode(instruction)
-                a_field_mode = Instruction.a_field_mode(instruction)
-                a_field_val = Instruction.a_field_val(instruction)
-                b_field_mode = Instruction.b_field_mode(instruction)
-                b_field_val = Instruction.b_field_val(instruction)
+                opcode = instruction.opcode(instruction)
+                a_field_mode = instruction.a_field_mode(instruction)
+                a_field_val = instruction.a_field_val(instruction)
+                b_field_mode = instruction.b_field_mode(instruction)
+                b_field_val = instruction.b_field_val(instruction)
 
             except SyntaxError as err:
                 raise SyntaxError(str(err))

@@ -6,6 +6,15 @@ instructions, and implements the logic behind
 those instructions. Each instruction is represented
 as a triple (held within a list), consisting of
 opcode, A-field operand and B-field operand.
+
+>>> from instruction import Instruction
+>>> instruction = Instruction()
+>>> example = [Instruction.MOV, 0, 1]
+>>> print (example)
+['mov', 0, 1]
+>>> print (Instruction.opcode(example))
+'mov'
+
 """
 
 import re
@@ -148,14 +157,14 @@ class Instruction:
     SyntaxError is raised
     """
     @classmethod
-    def opcode(self, instruction):
+    def opcode(cls, instruction):
 
-        if not len(instruction == 3):
+        if not len(instruction) == 3:
             raise SyntaxError("Invalid instruction")
 
         # Validate the opcode
         opcode = instruction[0]
-        m = self.__opcode_format(opcode)
+        m = cls.__opcode_format(opcode)
         if not m:
             raise SyntaxError("Invalid opcode")
 
@@ -167,12 +176,12 @@ class Instruction:
     Raises a SyntaxError if the A-field is malformed.
     """
     @classmethod
-    def a_field_mode(self, instruction):
+    def a_field_mode(cls, instruction):
 
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
-        return self.__address_mode(instruction[1])
+        return cls.__address_mode(instruction[1])
 
 
     """
@@ -181,12 +190,12 @@ class Instruction:
     Raises a SyntaxError if the A-field is malformed.
     """
     @classmethod
-    def a_field_val(self, instruction):
+    def a_field_val(cls, instruction):
 
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
-        return self.__operand_val(instruction[1])
+        return cls.__operand_val(instruction[1])
 
     """
     Returns the addressing mode of the B-field
@@ -194,12 +203,12 @@ class Instruction:
     Raises a SyntaxError if the B-field is malformed.
     """
     @classmethod
-    def b_field_mode(self, instruction):
+    def b_field_mode(cls, instruction):
 
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
-        return self.__address_mode(instruction[2])
+        return cls.__address_mode(instruction[2])
 
     """
     Returns the value of the B-field
@@ -207,9 +216,13 @@ class Instruction:
     Raises a SyntaxError if the B-field is malformed.
     """
     @classmethod
-    def b_field_val(self, instruction):
+    def b_field_val(cls, instruction):
 
         if not len(instruction == 3):
             raise SyntaxError("Invalid instruction")
 
-        return self.__operand_val(instruction[2])
+        return cls.__operand_val(instruction[2])
+
+    if __name__ == "__main__":
+        import doctest
+        doctest.testmod()
