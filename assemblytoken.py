@@ -1,11 +1,14 @@
 #! /usr/bin/python
 
-"""Class to represent a token for the Red Code
+"""
+Class to represent a token for the Red Code
 assembly language. A token consists of
-two items:
+four items:
 
 category    Category of the token
 lexeme      Token in string form
+column      Column in which token starts
+line        Line in the file on which token appears
 """
 
 
@@ -46,18 +49,28 @@ class AssemblyToken:
         A_INDIRECT_POST = 25
         B_INDIRECT_POST = 26
 
+        # Immediate values
+
+        UNSIGNEDINT = 27
+
+        # File markers
+
+        EOF = 28
+
         # Displayable names for each token category
         catnames = ['DAT', 'MOV', 'ADD', 'SUB', 'MUL',
                     'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL',
                     'CMP', 'SEQ', 'SNE', 'SLT', 'LDP', 'STP', 'NOP',
                     'IMMEDIATE', 'DIRECT', 'A_INDIRECT',
                     'B_INDIRECT', 'A_INDIRECT_PRE', 'B_INDIRECT_PRE',
-                    'A_INDIRECT_POST', 'B_INDIRECT_POST']
+                    'A_INDIRECT_POST', 'B_INDIRECT_POST', 'UNSIGNEDINT',
+                    'EOF']
 
         smalltokens = {'#': IMMEDIATE, '$': DIRECT,
                        '*': A_INDIRECT, '@': B_INDIRECT,
                        '{': A_INDIRECT_PRE, '<': B_INDIRECT_PRE,
-                       '}': A_INDIRECT_POST, '>': B_INDIRECT_POST}
+                       '}': A_INDIRECT_POST, '>': B_INDIRECT_POST,
+                       '': EOF}
 
         # Dictionary of BASIC reserved words
         keywords = {'DAT': DAT, 'MOV': MOV,
@@ -68,15 +81,19 @@ class AssemblyToken:
                     'SNE': SNE, 'SLT': SLT, 'LDP': LDP,
                     'STP': STP, 'NOP': NOP}
 
-        def __init__(self, category, lexeme):
+        def __init__(self, category, lexeme, column, line):
 
             self.category = category  # Category of the token
             self.lexeme = lexeme      # Token in string form
+            self.column = column      # Column in which token starts
+            self.line = line          # Line on which token appears
 
         def pretty_print(self):
-            """Pretty prints the token
-            """
-            print('Category:', self.catnames[self.category],
+            """Pretty prints the token"""
+
+            print('Column:', self.column,
+                  'Line', self.line,
+                  'Category:', self.catnames[self.category],
                   'Lexeme:', self.lexeme)
 
         def print_lexeme(self):
