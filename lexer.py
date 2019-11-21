@@ -4,13 +4,12 @@
 This class implements a lexical analyser capable
 of consuming BASIC statements and commands and returning
 a corresponding list of tokens.
->>> lexer = Lexer()
 """
 
 from assemblytoken import AssemblyToken as Token
 
 
-)class Lexer:
+class Lexer:
 
     def __init__(self):
 
@@ -56,7 +55,7 @@ from assemblytoken import AssemblyToken as Token
 
             # Process numbers that may appear in immediate operands
             if c.isdigit():
-                token.category = Token.UNSIGNEDINT
+                token.category = Token.INT
 
                 # Consume all of the digits
                 while True:
@@ -101,6 +100,7 @@ from assemblytoken import AssemblyToken as Token
 
             # Append the new token to the list
             self.__tokenlist.append(token)
+            token.pretty_print()
 
             if token.category == Token.EOF:  # Stop lexical analysis at EOF
                 break
@@ -145,5 +145,7 @@ from assemblytoken import AssemblyToken as Token
 
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+    lexer = Lexer()
+    tokens = lexer.tokenize('chang1')
+    for token in tokens:
+        token.pretty_print()
