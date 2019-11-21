@@ -40,22 +40,28 @@ class AssemblyToken:
 
         # Address modes
 
-        IMMEDIATE = 19
-        DIRECT = 20
-        A_INDIRECT = 21
-        B_INDIRECT = 22
-        A_INDIRECT_PRE = 23
-        B_INDIRECT_PRE = 24
+        IMMEDIATE =       19
+        DIRECT =          20
+        A_INDIRECT =      21
+        B_INDIRECT =      22
+        A_INDIRECT_PRE =  23
+        B_INDIRECT_PRE =  24
         A_INDIRECT_POST = 25
         B_INDIRECT_POST = 26
 
         # Immediate values
 
-        UNSIGNEDINT = 27
+        INT =   27
+        MINUS = 28
 
         # File markers
 
-        EOF = 28
+        EOF =     29
+        NEWLINE = 30
+
+        # Punctuation
+
+        COMMA = 31
 
         # Displayable names for each token category
         catnames = ['DAT', 'MOV', 'ADD', 'SUB', 'MUL',
@@ -63,14 +69,14 @@ class AssemblyToken:
                     'CMP', 'SEQ', 'SNE', 'SLT', 'LDP', 'STP', 'NOP',
                     'IMMEDIATE', 'DIRECT', 'A_INDIRECT',
                     'B_INDIRECT', 'A_INDIRECT_PRE', 'B_INDIRECT_PRE',
-                    'A_INDIRECT_POST', 'B_INDIRECT_POST', 'UNSIGNEDINT',
-                    'EOF']
+                    'A_INDIRECT_POST', 'B_INDIRECT_POST', 'INT',
+                    'MINUS', 'EOF', 'NEWLINE', 'COMMA']
 
         smalltokens = {'#': IMMEDIATE, '$': DIRECT,
                        '*': A_INDIRECT, '@': B_INDIRECT,
                        '{': A_INDIRECT_PRE, '<': B_INDIRECT_PRE,
                        '}': A_INDIRECT_POST, '>': B_INDIRECT_POST,
-                       '': EOF}
+                       '': EOF, '\n': NEWLINE, ',': COMMA, '-': MINUS}
 
         # Dictionary of BASIC reserved words
         keywords = {'DAT': DAT, 'MOV': MOV,
