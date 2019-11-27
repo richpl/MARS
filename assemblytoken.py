@@ -62,6 +62,7 @@ class AssemblyToken:
         # Punctuation
 
         COMMA = 31
+        NULL =  32  # Denotes a null field
 
         # Displayable names for each token category
         catnames = ['DAT', 'MOV', 'ADD', 'SUB', 'MUL',
@@ -70,7 +71,7 @@ class AssemblyToken:
                     'IMMEDIATE', 'DIRECT', 'A_INDIRECT',
                     'B_INDIRECT', 'A_INDIRECT_PRE', 'B_INDIRECT_PRE',
                     'A_INDIRECT_POST', 'B_INDIRECT_POST', 'INT',
-                    'MINUS', 'EOF', 'NEWLINE', 'COMMA']
+                    'MINUS', 'EOF', 'NEWLINE', 'COMMA', 'NULL']
 
         smalltokens = {'#': IMMEDIATE, '$': DIRECT,
                        '*': A_INDIRECT, '@': B_INDIRECT,
