@@ -22,7 +22,8 @@ class Lexer:
         self.__blankline = True # Reset to false if line is not blank
 
     def tokenize(self, file):
-        """Returns a list of tokens obtained by
+        """
+        Returns a list of tokens obtained by
         lexical analysis of the specified
         file.
         """
