@@ -20,7 +20,7 @@ address above coresize-1 is 0.
 >>> print (core.coresize)
 8000
 >>> core.print_instruction(4000)
-MOV 0 1
+MOV 0, 1
 """
 
 from assemblytoken import AssemblyToken as Token
@@ -169,9 +169,9 @@ class Core:
 
         print(Token.catnames[opcode], end=' ')
         print(a_mode_str, end='')
-        print(a_field_val, end=' ')
+        print(a_field_val, end=', ')
         print(b_mode_str, end='')
-        print(b_field_val, end='\n')
+        print(b_field_val)
 
     if __name__ == "__main__":
         import doctest
