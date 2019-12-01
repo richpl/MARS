@@ -167,11 +167,17 @@ class Core:
         elif b_field_mode == Token.B_INDIRECT_POST:
             b_mode_str = '>'
 
-        print(Token.catnames[opcode], end=' ')
-        print(a_mode_str, end='')
-        print(a_field_val, end=', ')
-        print(b_mode_str, end='')
-        print(b_field_val)
+        print(Token.catnames[opcode], end='')
+
+        if a_field_val != Token.NULL:
+            print (' ', end='')
+            print(a_mode_str, end='')
+            print(a_field_val, end='')
+
+        if b_field_val != Token.NULL:
+            print(', ', end='')
+            print(b_mode_str, end='')
+            print(b_field_val)
 
     if __name__ == "__main__":
         import doctest
