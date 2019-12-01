@@ -79,7 +79,7 @@ class AssemblyToken:
                        '}': A_INDIRECT_POST, '>': B_INDIRECT_POST,
                        '': EOF, '\n': NEWLINE, ',': COMMA, '-': MINUS}
 
-        # Dictionary of BASIC reserved words
+        # Dictionary of opcodes
         keywords = {'DAT': DAT, 'MOV': MOV,
                     'ADD': ADD, 'SUB': SUB, 'MUL': MUL,
                     'DIV': DIV, 'MOD': MOD, 'JMP': JMP,
