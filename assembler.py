@@ -18,6 +18,17 @@ the Core with a specified base address.
 >>> assembler.assemble(tokenlist, 1, core)
 >>> core.print_instruction(1)
 MOV 0, 1
+>>> opcode_token = Token(Token.JMP, 'JMP', 1, 1)
+>>> a_val_token = Token(Token.INT, '3', 1, 1)
+>>> tokenlist = [opcode_token, a_val_token, newline_token, eof_token]
+>>> assembler.assemble(tokenlist, 2, core)
+>>> core.print_instruction(2)
+JMP 3
+>>> opcode_token = Token(Token.NOP, 'NOP', 1, 1)
+>>> tokenlist = [opcode_token, newline_token, eof_token]
+>>> assembler.assemble(tokenlist, 3, core)
+>>> core.print_instruction(3)
+NOP
 """
 
 from assemblytoken import AssemblyToken as Token
@@ -83,8 +94,6 @@ class Assembler:
             self.__instruction()
             self.__consume(Token.NEWLINE)
 
-            core.print_instruction(self.__next_addr)
-
             # Increment the address pointer
             if self.__next_addr == self.__core.coresize - 1:
                 self.__next_addr = 0
@@ -98,9 +107,20 @@ class Assembler:
         and maps to the core at the specified base address.
         """
 
-        if self.__token.category in [Token.MOV]:
+        if self.__token.category in [Token.MOV, Token.SEQ, Token.SNE, Token.CMP,
+                                     Token.ADD, Token.SUB, Token.MUL, Token.DIV,
+                                     Token.MOD, Token.DAT]:
             # Assemble all instructions that take two operands
             self.__two_instr()
+
+        elif self.__token.category in [Token.SLT, Token.LDP, Token.STP, Token.JMP,
+                                       Token.JMZ, Token.JMN, Token.DJN, Token.SPL]:
+            # Assemble all instructions that take one operand
+            self.__one_instr()
+
+        elif self.__token.category in [Token.NOP]:
+            # Assemble all instructions that take no operands
+            self.__zero_instr()
 
         else:
             raise RuntimeError('Invalid opcode in line ', self.__token.line)
@@ -114,38 +134,16 @@ class Assembler:
         opcode = self.__token.category
         self.__advance()  # Advance past the opcode
 
-        # Record the A-field addressing mode, if it is present
-        if self.__token.category == Token.INT:
-            # No addressing mode specified, so assume the default
-            # mode of direct
-            a_field_mode = Token.DIRECT
-
-        elif self.__token.category in [Token.IMMEDIATE, Token.DIRECT, Token.A_INDIRECT,
-                                       Token.A_INDIRECT_PRE, Token.A_INDIRECT_POST]:
-            a_field_mode = self.__token.category
-            self.__advance()  # Advance past the addressing mode
-
-        else:
-            raise RuntimeError('Invalid A-field addressing mode in line ', self.__token.line)
+        # Record the A-field addressing mode
+        a_field_mode = self.__address_mode()
 
         # Record the A-field value
         a_field_val = self.__operand()
 
         self.__consume(Token.COMMA)
 
-        # Record the B-field addressing mode, if it is present
-        if self.__token.category == Token.INT:
-            # No addressing mode specified, so assume the default
-            # mode of direct
-            b_field_mode = Token.DIRECT
-
-        elif self.__token.category in [Token.IMMEDIATE, Token.DIRECT, Token.B_INDIRECT,
-                                       Token.B_INDIRECT_PRE, Token.B_INDIRECT_POST]:
-            b_field_mode = self.__token.category
-            self.__advance()  # Advance past the addressing mode
-
-        else:
-            raise RuntimeError('Invalid B-field addressing mode in line ', self.__token.line)
+        # Record the B-field addressing mode
+        b_field_mode = self.__address_mode()
 
         # Record the B-field value
         b_field_val = self.__operand()
@@ -153,6 +151,71 @@ class Assembler:
         # Map the instruction into the core at the next address
         self.__core.put(opcode, a_field_mode, a_field_val,
                         b_field_mode, b_field_val, self.__next_addr)
+
+    def __one_instr(self):
+        """
+        Assembles a one operand instruction
+        """
+
+        # Record the opcode
+        opcode = self.__opcode()
+
+        # Record the A-field addressing mode
+        a_field_mode = self.__address_mode()
+
+        # Record the A-field value
+        a_field_val = self.__operand()
+
+        # Map the instruction into the core at the next address
+        self.__core.put(opcode, a_field_mode, a_field_val,
+                        Token.NULL, Token.NULL, self.__next_addr)
+
+    def __zero_instr(self):
+        """
+        Assembles a zero operand instruction
+        """
+
+        # Record the opcode
+        opcode = self.__opcode()
+
+        # Map the instruction into the core at the next address
+        self.__core.put(opcode, Token.NULL, Token.NULL,
+                        Token.NULL, Token.NULL, self.__next_addr)
+
+    def __opcode(self):
+        """
+        Assembles an opcode
+
+        :return: The opcode value
+        """
+
+        # Record the opcode
+        opcode = self.__token.category
+        self.__advance()  # Advance past the opcode
+
+        return opcode
+
+    def __address_mode(self):
+        """
+        Assembles an oprand addressing mode
+
+        :return: The addressing mode value
+        """
+
+        if self.__token.category == Token.INT:
+            # No addressing mode specified, so assume the default
+            # mode of direct
+            mode = Token.DIRECT
+
+        elif self.__token.category in [Token.IMMEDIATE, Token.DIRECT, Token.A_INDIRECT,
+                                       Token.A_INDIRECT_PRE, Token.A_INDIRECT_POST]:
+            mode = self.__token.category
+            self.__advance()  # Advance past the addressing mode
+
+        else:
+            raise RuntimeError('Invalid A-field addressing mode in line ', self.__token.line)
+
+        return mode
 
     def __operand(self):
         """
