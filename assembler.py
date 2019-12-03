@@ -29,6 +29,12 @@ JMP 3
 >>> assembler.assemble(tokenlist, 3, core)
 >>> core.print_instruction(3)
 NOP
+>>> opcode_token = Token(Token.DAT, 'DAT', 1, 1)
+>>> b_val_token = Token(Token.INT, '1', 1, 1)
+>>> tokenlist = [opcode_token, b_val_token, newline_token, eof_token]
+>>> assembler.assemble(tokenlist, 4, core)
+>>> core.print_instruction(4)
+DAT 1
 """
 
 from assemblytoken import AssemblyToken as Token
@@ -109,7 +115,7 @@ class Assembler:
 
         if self.__token.category in [Token.MOV, Token.SEQ, Token.SNE, Token.CMP,
                                      Token.ADD, Token.SUB, Token.MUL, Token.DIV,
-                                     Token.MOD, Token.DAT]:
+                                     Token.MOD]:
             # Assemble all instructions that take two operands
             self.__two_instr()
 
@@ -121,6 +127,11 @@ class Assembler:
         elif self.__token.category in [Token.NOP]:
             # Assemble all instructions that take no operands
             self.__zero_instr()
+
+        elif self.__token.category in [Token.DAT]:
+            # DAT is a special case, may take either one or two
+            # operands
+            self.__dat_instr()
 
         else:
             raise RuntimeError('Invalid opcode in line ', self.__token.line)
@@ -181,6 +192,44 @@ class Assembler:
         # Map the instruction into the core at the next address
         self.__core.put(opcode, Token.NULL, Token.NULL,
                         Token.NULL, Token.NULL, self.__next_addr)
+
+    def __dat_instr(self):
+        """
+        Assembles a DAT instruction, which may take either one or
+        two operands.
+        """
+
+        # Record the opcode
+        opcode = self.__opcode()
+
+        # Record the A-field addressing mode
+        a_field_mode = self.__address_mode()
+
+        # Record the A-field value
+        a_field_val = self.__operand()
+
+        if self.__token.category == Token.COMMA:
+            # We have two operands
+            self.__advance()  # Advance past the comma
+
+            # Record the B-field addressing mode
+            b_field_mode = self.__address_mode()
+
+            # Record the B-field value
+            b_field_val = self.__operand()
+
+        else:
+            # We only have one operand. By convention, DAT
+            # with one operand places this in the B-field.
+            b_field_mode = a_field_mode
+            b_field_val = a_field_val
+
+            a_field_mode = Token.NULL
+            a_field_val = Token.NULL
+
+        # Map the instruction into the core at the next address
+        self.__core.put(opcode, a_field_mode, a_field_val,
+                        b_field_mode, b_field_val, self.__next_addr)
 
     def __opcode(self):
         """
