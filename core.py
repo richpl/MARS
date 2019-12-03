@@ -135,9 +135,6 @@ class Core:
         [opcode, a_field_mode, a_field_val,
          b_field_mode, b_field_val] = self.__core[address]
 
-        if opcode == Token.DAT:
-            f = 3
-
         # Generate a string to represent the A-field
         # addressing mode
         a_mode_str = ''  # IMMEDIATE mode
@@ -178,10 +175,12 @@ class Core:
             print(a_field_val, end='')
 
         if b_field_val != Token.NULL:
-            if opcode != Token.DAT:
-                print(',', end='')
+            if opcode == Token.DAT and a_field_val == Token.NULL:
+                print(' ', end='')
 
-            print(' ', end='')
+            else:
+                print(', ', end='')
+
             print(b_mode_str, end='')
             print(b_field_val)
 
