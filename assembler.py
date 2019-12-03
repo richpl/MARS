@@ -30,11 +30,14 @@ JMP 3
 >>> core.print_instruction(3)
 NOP
 >>> opcode_token = Token(Token.DAT, 'DAT', 1, 1)
->>> b_val_token = Token(Token.INT, '1', 1, 1)
 >>> tokenlist = [opcode_token, b_val_token, newline_token, eof_token]
 >>> assembler.assemble(tokenlist, 4, core)
 >>> core.print_instruction(4)
 DAT 1
+>>> tokenlist = [opcode_token, a_val_token, comma_token, b_val_token, newline_token, eof_token]
+>>> assembler.assemble(tokenlist, 5, core)
+>>> core.print_instruction(5)
+DAT 3, 1
 """
 
 from assemblytoken import AssemblyToken as Token
