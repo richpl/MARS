@@ -1,6 +1,25 @@
 """
-Executes a Red Code program by interpreting the assembled instructions
-in the core
+Executes a list of Red Code programs by interpreting the assembled instructions
+in the core. All programs will be executed until there are none
+with any processes left.
+
+Each program will be permitted to execute one
+process in turn before relinquishing control to the next
+process, e.g.
+
+        program A, process 1
+        program B, process 1
+        program A, process 2
+        program B, process 2
+        program A, process 1
+        program B, process 3
+        ...
+
+A process is terminated when it attempts to execute
+either a DAT instruction or attempts to execute
+an instruction using a core address which holds no valid
+instruction (the core is initialised with
+null values).
 """
 
 from core import Core
@@ -227,18 +246,7 @@ class Interpreter:
 
     def run(self):
         """
-        Executes all of the programs in the core, until there are none
-        left to execute. Each program will be permitted to execute one
-        process in turn before relinquishing control to the next
-        process, e.g.
-
-        program A, process 1
-        program B, process 1
-        program A, process 2
-        program B, process 2
-        program A, process 1
-        program B, process 3
-        ...
+        Executes all of the programs in the core.
         """
 
         # Keep executing programs for as long
