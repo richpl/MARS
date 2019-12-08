@@ -16,7 +16,7 @@ address above coresize-1 is 0.
 >>> a_field_val = 0
 >>> b_field_mode = Token.DIRECT
 >>> b_field_val = 1
->>> core.put(opcode, a_field_mode, a_field_val, b_field_mode, b_field_val, 4000)
+>>> core.put_instr(opcode, a_field_mode, a_field_val, b_field_mode, b_field_val, 4000)
 >>> print (core.coresize)
 8000
 >>> core.print_instruction(4000)
