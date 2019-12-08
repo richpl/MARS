@@ -102,7 +102,7 @@ class Core:
 
         return self.__core[address][4]
 
-    def put(self,  opcode, a_field_mode, a_field_val,
+    def put_instr(self, opcode, a_field_mode, a_field_val,
             b_field_mode, b_field_val, address):
         """
         Puts the specified instruction in the
@@ -123,6 +123,86 @@ class Core:
 
         self.__core[address] = [opcode, a_field_mode, a_field_val,
                                 b_field_mode, b_field_val]
+
+    def put_opcode(self, opcode, address):
+        """
+        Puts the specified opcode in the
+        specified word position. The opcode
+        is assumed to be valid, and the original
+        contents are overwritten.
+
+        :param opcode: The numeric value representing the opcode
+        :param address: The address at which to insert the opcode
+        """
+
+        if address < 0 or address > self.coresize:
+            raise IndexError('Invalid address specified')
+
+        self.__core[address][0] = opcode
+
+    def put_a_field_mode(self, a_field_mode, address):
+        """
+        Puts the specified A-field mode in the
+        specified word position. The A-field mode
+        is assumed to be valid, and the original
+        contents are overwritten.
+
+        :param a_field_mode: A-field addressing mode
+        :param address: The address at which to insert the mode
+        """
+
+        if address < 0 or address > self.coresize:
+            raise IndexError('Invalid address specified')
+
+        self.__core[address][1] = a_field_mode
+
+    def put_a_field_val(self, a_field_val, address):
+        """
+        Puts the specified A-field value in the
+        specified word position. The A-field value
+        is assumed to be valid, and the original
+        contents are overwritten.
+
+        :param a_field_val: A-field value
+        :param address: The address at which to insert the value
+        """
+
+        if address < 0 or address > self.coresize:
+            raise IndexError('Invalid address specified')
+
+        self.__core[address][2] = a_field_val
+
+    def put_b_field_mode(self, b_field_mode, address):
+        """
+        Puts the specified B-field mode in the
+        specified word position. The B-field mode
+        is assumed to be valid, and the original
+        contents are overwritten.
+
+        :param b_field_mode: B-field addressing mode
+        :param address: The address at which to insert the mode
+        """
+
+        if address < 0 or address > self.coresize:
+            raise IndexError('Invalid address specified')
+
+        self.__core[address][3] = b_field_mode
+
+    def put_b_field_val(self, b_field_val, address):
+        """
+        Puts the specified B-field value in the
+        specified word position. The B-field value
+        is assumed to be valid, and the original
+        contents are overwritten.
+
+        :param b_field_val: B-field value
+        :param address: The address at which to insert the value
+        """
+
+        if address < 0 or address > self.coresize:
+            raise IndexError('Invalid address specified')
+
+        self.__core[address][4] = b_field_val
 
     def print_instruction(self, address):
         """
