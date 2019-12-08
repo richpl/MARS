@@ -5,7 +5,7 @@ with any processes left.
 
 Each program will be permitted to execute one
 process in turn before relinquishing control to the next
-process, e.g.
+program, e.g.
 
         program A, process 1
         program B, process 1
@@ -149,6 +149,35 @@ class Interpreter:
         else:
             return address + 1
 
+    def __execute_mov(self, address):
+        """
+        Executes the MOV instruction
+
+        :param address: The address of the MOV
+        """
+
+        # Acquire operand modes and values
+        a_mode = self.__core.a_field_mode(address)
+        a_val = self.__core.a_field_val(address)
+
+        b_mode = self.__core.b_field_mode(address)
+        b_val = self.__core.b_field_val(address)
+
+        if a_mode == Token.DIRECT and b_mode == Token.DIRECT:
+            dest_address = (address + b_val) % self.__core.coresize
+            self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
+
+        elif a_mode == Token.IMMEDIATE and b_mode == Token.IMMEDIATE:
+            self.__core.put_b_field_val(a_val, address)
+
+        elif a_mode == Token.IMMEDIATE and b_mode == Token.DIRECT:
+            dest_address = (address + b_val) % self.__core.coresize
+            self.__core.put_b_field_val(a_val, dest_address)
+
+        else:
+            #TODO
+            pass
+
     def execute(self, address):
         """
         Executes an instruction, and returns the address of the
@@ -171,8 +200,8 @@ class Interpreter:
             raise RuntimeError('Attempt to execute DAT')
 
         elif opcode == Token.MOV:
-            #TODO
-            pass
+            self.__execute_mov(address)
+            return self.__next(address)
 
         elif opcode == Token.ADD:
             #TODO
