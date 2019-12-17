@@ -20,6 +20,50 @@ either a DAT instruction or attempts to execute
 an instruction using a core address which holds no valid
 instruction (the core is initialised with
 null values).
+
+>>> from core import Core
+>>> from assemblytoken import AssemblyToken as Token
+>>> from interpreter import Interpreter
+>>> core = Core()
+>>> interpreter = Interpreter(core, [4000])
+>>> # Test processing of MOV $0, $1 instruction
+>>> opcode = Token.MOV
+>>> a_field_mode = Token.DIRECT
+>>> a_field_val = 0
+>>> b_field_mode = Token.DIRECT
+>>> b_field_val = 1
+>>> core.put_instr(opcode, a_field_mode, a_field_val, b_field_mode, b_field_val, 4000)
+>>> core.print_instruction(4000)
+MOV 0, 1
+>>> core.print_instruction(4001)
+NULL
+>>> next_address = interpreter.execute(4000)
+>>> print(next_address)
+4001
+>>> # Expect entire instruction to be copied to next address
+>>> core.print_instruction(4001)
+MOV 0, 1
+>>> # Test processing of MOV #0, #1
+>>> core.put_a_field_mode(Token.IMMEDIATE, 4001)
+>>> core.put_b_field_mode(Token.IMMEDIATE, 4001)
+>>> core.print_instruction(4001)
+MOV #0, #1
+>>> next_address = interpreter.execute(4001)
+>>> print(next_address)
+4002
+>>> # Expect A-field to be copied to B-field
+>>> core.print_instruction(4001)
+MOV #0, #0
+>>> # Test processing of MOV -1, #0
+>>> core.put_a_field_mode(Token.DIRECT, 4001)
+>>> core.put_a_field_val(-1, 4001)
+>>> core.print_instruction(4001)
+MOV -1, #0
+>>> next_address = interpreter.execute(4001)
+>>> # Expect B-field of prior instruction to be
+>>> # copied to B-field of this instruction
+>>> core.print_instruction(4001)
+MOV -1, #1
 """
 
 from core import Core
@@ -128,7 +172,7 @@ class Interpreter:
         # Initialise a dictionary to map programs to processes that they have spawned,
         # where each process is defined by its program counter. Upon creation
         # there will be just one process per program, starting at the base address
-        self.__programs = []
+        self.__programs = {}
         for base_address in base_addresses:
             self.__programs[base_address] = Program(base_address)
 
@@ -163,20 +207,26 @@ class Interpreter:
         b_mode = self.__core.b_field_mode(address)
         b_val = self.__core.b_field_val(address)
 
-        if a_mode == Token.DIRECT and b_mode == Token.DIRECT:
+        # If A-field is immediate, default to MOV.AB modifier
+        if a_mode == Token.IMMEDIATE:
+            if b_mode == Token.IMMEDIATE:
+                self.__core.put_b_field_val(a_val, address)
+
+            elif b_mode == Token.DIRECT:
+                dest_address = (address + b_val) % self.__core.coresize
+                self.__core.put_b_field_val(a_val, dest_address)
+
+        # If B-field is immediate and A-field is not,
+        # default to MOV.B modifier
+        elif b_mode == Token.IMMEDIATE:
+            src_address = (address + a_val) % self.__core.coresize
+            b_val = self.__core.b_field_val(src_address)
+            self.__core.put_b_field_val(b_val, address)
+
+        # Neither mode is immediate, default to MOV.I modifier
+        else:
             dest_address = (address + b_val) % self.__core.coresize
             self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
-
-        elif a_mode == Token.IMMEDIATE and b_mode == Token.IMMEDIATE:
-            self.__core.put_b_field_val(a_val, address)
-
-        elif a_mode == Token.IMMEDIATE and b_mode == Token.DIRECT:
-            dest_address = (address + b_val) % self.__core.coresize
-            self.__core.put_b_field_val(a_val, dest_address)
-
-        else:
-            #TODO
-            pass
 
     def execute(self, address):
         """
