@@ -64,6 +64,15 @@ MOV -1, #0
 >>> # copied to B-field of this instruction
 >>> core.print_instruction(4001)
 MOV -1, #1
+>>> # Test processing of JMP #2000
+>>> core.put_opcode(Token.JMP, 4002)
+>>> core.put_a_field_mode(Token.IMMEDIATE, 4002)
+>>> core.put_a_field_val(2000, 4002)
+>>> core.print_instruction(4002)
+JMP #2000
+>>> next_address = interpreter.execute(4002)
+>>> print(next_address)
+2000
 """
 
 from core import Core
@@ -193,11 +202,38 @@ class Interpreter:
         else:
             return address + 1
 
-    def __execute_mov(self, address):
+    def __execute_jmp(self, address):
         """
-        Executes the MOV instruction
+        Executes the JMP instruction. Only the A-field is used.
+        Addressing mode is expected to be either immediate or
+        direct.
 
         :param address: The address of the MOV
+
+        :return: The address to which to jump
+        """
+
+        # Acquire operand modes and values
+        a_mode = self.__core.a_field_mode(address)
+        a_val = self.__core.a_field_val(address)
+
+        if a_mode == Token.IMMEDIATE:
+            return self.__core.a_field_val(address)
+
+        elif a_mode == Token.DIRECT:
+            dest_address = (address + a_val) % self.__core.coresize
+            return self.__core.a_field_val(dest_address)
+
+        else:
+            raise RuntimeError('Invalid JMP addressing mode')
+
+    def __execute_mov(self, address):
+        """
+        Executes the MOV instruction.
+
+        :param address: The address of the MOV
+
+        :return: The address of the next instruction
         """
 
         # Acquire operand modes and values
@@ -228,6 +264,9 @@ class Interpreter:
             dest_address = (address + b_val) % self.__core.coresize
             self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
 
+        # Return the next instruction address
+        return self.__next(address)
+
     def execute(self, address):
         """
         Executes an instruction, and returns the address of the
@@ -238,6 +277,9 @@ class Interpreter:
 
         :return: The new address of the program counter.
         """
+
+        if address < 0 or address >= self.__core.coresize:
+            raise RuntimeError('Attempt to execute instruction at invalid address')
 
         opcode = self.__core.opcode(address)
 
@@ -250,8 +292,7 @@ class Interpreter:
             raise RuntimeError('Attempt to execute DAT')
 
         elif opcode == Token.MOV:
-            self.__execute_mov(address)
-            return self.__next(address)
+            return self.__execute_mov(address)
 
         elif opcode == Token.ADD:
             #TODO
@@ -274,8 +315,7 @@ class Interpreter:
             pass
 
         elif opcode == Token.JMP:
-            #todo
-            pass
+            return self.__execute_jmp(address)
 
         elif opcode == Token.JMZ:
             #todo
