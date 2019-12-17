@@ -53,7 +53,7 @@ class Core:
         Returns the opcode value (given by AssemblyToken) at the specified address.
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         return self.__core[address][0]
@@ -64,7 +64,7 @@ class Core:
         at the specified address.
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         return self.__core[address][1]
@@ -75,7 +75,7 @@ class Core:
         at the specified address.
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         return self.__core[address][2]
@@ -86,7 +86,7 @@ class Core:
         at the specified address.
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         return self.__core[address][3]
@@ -97,7 +97,7 @@ class Core:
         at the specified address.
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         return self.__core[address][4]
@@ -118,7 +118,7 @@ class Core:
         :param address: The address at which to insert the instruction
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address] = [opcode, a_field_mode, a_field_val,
@@ -135,7 +135,7 @@ class Core:
         :param address: The address at which to insert the opcode
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address][0] = opcode
@@ -151,7 +151,7 @@ class Core:
         :param address: The address at which to insert the mode
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address][1] = a_field_mode
@@ -167,7 +167,7 @@ class Core:
         :param address: The address at which to insert the value
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address][2] = a_field_val
@@ -183,7 +183,7 @@ class Core:
         :param address: The address at which to insert the mode
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address][3] = b_field_mode
@@ -199,7 +199,7 @@ class Core:
         :param address: The address at which to insert the value
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         self.__core[address][4] = b_field_val
@@ -209,7 +209,7 @@ class Core:
         Pretty prints the instruction at the specified address
         """
 
-        if address < 0 or address > self.coresize:
+        if address < 0 or address >= self.coresize:
             raise IndexError('Invalid address specified')
 
         [opcode, a_field_mode, a_field_val,
