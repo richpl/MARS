@@ -21,6 +21,29 @@ an instruction using a core address which holds no valid
 instruction (the core is initialised with
 null values).
 
+>>> #
+>>> # Test the program dictionary
+>>> #
+>>> from interpreter import Program
+>>> program = Program(1000)
+>>> print(program.current_process_pc())
+1000
+>>> program.add_process(2000)
+>>> program.next_process()
+>>> print(program.current_process_pc())
+2000
+>>> program.update_current_process_pc(3000)
+>>> print(program.current_process_pc())
+3000
+>>> program.next_process()
+>>> print(program.current_process_pc())
+1000
+>>> program.kill_current_process()
+>>> print(program.current_process_pc())
+3000
+>>> #
+>>> # Test the interpreter
+>>> #
 >>> from core import Core
 >>> from assemblytoken import AssemblyToken as Token
 >>> from interpreter import Interpreter
@@ -75,7 +98,6 @@ JMP #2000
 2000
 """
 
-from core import Core
 from assemblytoken import AssemblyToken as Token
 
 
@@ -180,7 +202,7 @@ class Interpreter:
 
         # Initialise a dictionary to map programs to processes that they have spawned,
         # where each process is defined by its program counter. Upon creation
-        # there will be just one process per program, starting at the base address
+        # there will be just one process per program, with the base address as key.
         self.__programs = {}
         for base_address in base_addresses:
             self.__programs[base_address] = Program(base_address)
@@ -202,13 +224,70 @@ class Interpreter:
         else:
             return address + 1
 
+    def __execute_add(self, address):
+        """
+        Executes the ADD instruction.
+
+        :param address: The address of the ADD instruction
+
+        :return: The address of the next instruction
+        """
+
+        # Acquire operand modes and values
+        a_mode = self.__core.a_field_mode(address)
+        a_val = self.__core.a_field_val(address)
+
+        b_mode = self.__core.b_field_mode(address)
+        b_val = self.__core.b_field_val(address)
+
+        if a_mode == Token.IMMEDIATE:
+            if b_mode == Token.IMMEDIATE:
+                # Add A-field to B-field
+                self.__core.put_b_field_val(b_val + a_val, address)
+
+            elif b_mode == Token.DIRECT:
+                # Add A-field to instruction pointed to by B-field
+                dest_address = (address + b_val) % self.__core.coresize
+                b_val = self.__core.b_field_val(dest_address)
+                self.__core.put_b_field_val(b_val + a_val, dest_address)
+
+            elif b_mode == Token.INDIRECT:
+                # TODO
+                pass
+
+        elif a_mode == Token.DIRECT:
+            if b_mode == Token.IMMEDIATE:
+                # Add instruction pointed to by A-field to B-field
+                src_address = (address + a_val) % self.__core.coresize
+                src_b_val = self.__core.b_field_val(src_address)
+                self.__core.put_b_field_val(b_val + src_b_val, address)
+
+            elif b_mode == Token.DIRECT:
+                pass
+
+            elif b_mode == Token.INDIRECT:
+                pass
+
+        else:  # A-field is INDIRECT
+            if b_mode == Token.IMMEDIATE:
+                pass
+
+            elif b_mode == Token.DIRECT:
+                pass
+
+            elif b_mode == Token.INDIRECT:
+                pass
+
+        # Return the next instruction address
+        return self.__next(address)
+
     def __execute_jmp(self, address):
         """
         Executes the JMP instruction. Only the A-field is used.
         Addressing mode is expected to be either immediate or
         direct.
 
-        :param address: The address of the MOV
+        :param address: The address of the JMP instruction
 
         :return: The address to which to jump
         """
@@ -231,7 +310,7 @@ class Interpreter:
         """
         Executes the MOV instruction.
 
-        :param address: The address of the MOV
+        :param address: The address of the MOV instruction
 
         :return: The address of the next instruction
         """
@@ -243,26 +322,45 @@ class Interpreter:
         b_mode = self.__core.b_field_mode(address)
         b_val = self.__core.b_field_val(address)
 
-        # If A-field is immediate, default to MOV.AB modifier
         if a_mode == Token.IMMEDIATE:
             if b_mode == Token.IMMEDIATE:
+                # Put A-field into B-field
                 self.__core.put_b_field_val(a_val, address)
 
             elif b_mode == Token.DIRECT:
+                # Put A-field into instruction pointed to by B-field
                 dest_address = (address + b_val) % self.__core.coresize
                 self.__core.put_b_field_val(a_val, dest_address)
 
-        # If B-field is immediate and A-field is not,
-        # default to MOV.B modifier
-        elif b_mode == Token.IMMEDIATE:
-            src_address = (address + a_val) % self.__core.coresize
-            b_val = self.__core.b_field_val(src_address)
-            self.__core.put_b_field_val(b_val, address)
+            elif b_mode == Token.INDIRECT:
+                # TODO
+                pass
 
-        # Neither mode is immediate, default to MOV.I modifier
-        else:
-            dest_address = (address + b_val) % self.__core.coresize
-            self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
+        elif a_mode == Token.DIRECT:
+            if b_mode == Token.IMMEDIATE:
+                # Put instruction pointed to by A-field into B-field
+                src_address = (address + a_val) % self.__core.coresize
+                b_val = self.__core.b_field_val(src_address)
+                self.__core.put_b_field_val(b_val, address)
+
+            elif b_mode == Token.DIRECT:
+                # Move instruction pointed to by A-field into instruction
+                # pointed to by B-field
+                dest_address = (address + b_val) % self.__core.coresize
+                self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
+
+            elif b_mode == Token.INDIRECT:
+                pass
+
+        else:  # A-field is INDIRECT
+            if b_mode == Token.IMMEDIATE:
+                pass
+
+            elif b_mode == Token.DIRECT:
+                pass
+
+            elif b_mode == Token.INDIRECT:
+                pass
 
         # Return the next instruction address
         return self.__next(address)
@@ -295,66 +393,66 @@ class Interpreter:
             return self.__execute_mov(address)
 
         elif opcode == Token.ADD:
-            #TODO
+            # TODO
             pass
 
         elif opcode == Token.SUB:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.MUL:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.DIV:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.MOD:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.JMP:
             return self.__execute_jmp(address)
 
         elif opcode == Token.JMZ:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.JMN:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.DJN:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.SPL:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.CMP:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.SEQ:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.SNE:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.SLT:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.LDP:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.STP:
-            #todo
+            # todo
             pass
 
         elif opcode == Token.NULL:
@@ -389,6 +487,4 @@ class Interpreter:
             except IndexError:
                 # No processes left for this
                 # program, so remove it
-                index = self.__programs.index(program)
-                del self.__programs[index]
-
+                del self.__programs[program]
