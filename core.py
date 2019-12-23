@@ -217,35 +217,23 @@ class Core:
 
         # Generate a string to represent the A-field
         # addressing mode
-        a_mode_str = ''  # IMMEDIATE mode
+        a_mode_str = ''  # DIRECT mode
 
         if a_field_mode == Token.IMMEDIATE:
             a_mode_str = '#'
 
-        elif a_field_mode == Token.A_INDIRECT:
-            a_mode_str = '*'
-
-        elif a_field_mode == Token.A_INDIRECT_PRE:
-            a_mode_str = '{'
-
-        elif a_field_mode == Token.A_INDIRECT_POST:
-            a_mode_str = '}'
+        elif a_field_mode == Token.INDIRECT:
+            a_mode_str = '@'
 
         # Generate a string to represent the B-field
         # addressing mode
-        b_mode_str = ''  # IMMEDIATE mode
+        b_mode_str = ''  # DIRECT mode
 
         if b_field_mode == Token.IMMEDIATE:
             b_mode_str = '#'
 
-        elif b_field_mode == Token.B_INDIRECT:
+        elif b_field_mode == Token.INDIRECT:
             b_mode_str = '@'
-
-        elif b_field_mode == Token.B_INDIRECT_PRE:
-            b_mode_str = '<'
-
-        elif b_field_mode == Token.B_INDIRECT_POST:
-            b_mode_str = '>'
 
         print(Token.catnames[opcode], end='')
 
