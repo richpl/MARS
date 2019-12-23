@@ -42,42 +42,33 @@ class AssemblyToken:
 
         IMMEDIATE =       19
         DIRECT =          20
-        A_INDIRECT =      21
-        B_INDIRECT =      22
-        A_INDIRECT_PRE =  23
-        B_INDIRECT_PRE =  24
-        A_INDIRECT_POST = 25
-        B_INDIRECT_POST = 26
+        INDIRECT =        21
 
         # Immediate values
 
-        INT =   27
-        MINUS = 28
+        INT =   22
+        MINUS = 23
 
         # File markers
 
-        EOF =     29
-        NEWLINE = 30
+        EOF =     24
+        NEWLINE = 25
 
         # Punctuation
 
-        COMMA = 31
-        NULL =  32  # Denotes a null field
+        COMMA = 26
+        NULL =  27  # Denotes a null field
 
         # Displayable names for each token category
         catnames = ['DAT', 'MOV', 'ADD', 'SUB', 'MUL',
                     'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL',
                     'CMP', 'SEQ', 'SNE', 'SLT', 'LDP', 'STP', 'NOP',
-                    'IMMEDIATE', 'DIRECT', 'A_INDIRECT',
-                    'B_INDIRECT', 'A_INDIRECT_PRE', 'B_INDIRECT_PRE',
-                    'A_INDIRECT_POST', 'B_INDIRECT_POST', 'INT',
+                    'IMMEDIATE', 'DIRECT', 'INDIRECT', 'INT',
                     'MINUS', 'EOF', 'NEWLINE', 'COMMA', 'NULL']
 
         smalltokens = {'#': IMMEDIATE, '$': DIRECT,
-                       '*': A_INDIRECT, '@': B_INDIRECT,
-                       '{': A_INDIRECT_PRE, '<': B_INDIRECT_PRE,
-                       '}': A_INDIRECT_POST, '>': B_INDIRECT_POST,
-                       '': EOF, '\n': NEWLINE, ',': COMMA, '-': MINUS}
+                       '@': INDIRECT, '': EOF,
+                       '\n': NEWLINE, ',': COMMA, '-': MINUS}
 
         # Dictionary of opcodes
         keywords = {'DAT': DAT, 'MOV': MOV,
