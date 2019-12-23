@@ -259,8 +259,7 @@ class Assembler:
             # mode of direct
             mode = Token.DIRECT
 
-        elif self.__token.category in [Token.IMMEDIATE, Token.DIRECT, Token.A_INDIRECT,
-                                       Token.A_INDIRECT_PRE, Token.A_INDIRECT_POST]:
+        elif self.__token.category in [Token.IMMEDIATE, Token.DIRECT, Token.INDIRECT]:
             mode = self.__token.category
             self.__advance()  # Advance past the addressing mode
 
