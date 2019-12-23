@@ -1,9 +1,8 @@
 # MARS
 CoreWars Red Code simulator written in Python, unfinished
 
-Roughly 88 standard, with immediate (#), direct ($) and B-field indirect (@)
-addressing modes (although lexical analyser can recognise ICWS '94 standard
-addressing modes).
+Roughly 88 standard, with immediate (#), direct ($) and indirect (@)
+addressing modes.
 
 Valid instructions:
 
