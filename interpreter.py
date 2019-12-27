@@ -50,12 +50,7 @@ null values).
 >>> core = Core()
 >>> interpreter = Interpreter(core, [4000])
 >>> # Test processing of MOV $0, $1 instruction
->>> opcode = Token.MOV
->>> a_field_mode = Token.DIRECT
->>> a_field_val = 0
->>> b_field_mode = Token.DIRECT
->>> b_field_val = 1
->>> core.put_instr(opcode, a_field_mode, a_field_val, b_field_mode, b_field_val, 4000)
+>>> core.put_instr(Token.MOV, Token.DIRECT, 0, Token.DIRECT, 1, 4000)
 >>> core.print_instruction(4000)
 MOV 0, 1
 >>> core.print_instruction(4001)
@@ -87,10 +82,25 @@ MOV -1, #0
 >>> # copied to B-field of this instruction
 >>> core.print_instruction(4001)
 MOV -1, #1
+>>> # Test processing of MOV 2, @2
+>>> core.put_instr(Token.MOV, Token.DIRECT, 2, Token.INDIRECT, 2, 5000)
+>>> core.print_instruction(5000)
+MOV 2, @2
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 4, 5002)
+>>> next_address = interpreter.execute(5000)
+>>> core.print_instruction(5006)
+DAT #0, #4
+>>> # Test processing of MOV @-2, 0
+>>> core.put_instr(Token.MOV, Token.INDIRECT, -2, Token.DIRECT, 0, 6000)
+>>> core.print_instruction(6000)
+MOV @-2, 0
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, -1, Token.IMMEDIATE, 0, 5998)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 4, Token.IMMEDIATE, 0, 5997)
+>>> next_address = interpreter.execute(6000)
+>>> core.print_instruction(6000)
+DAT #4, #0
 >>> # Test processing of JMP #2000
->>> core.put_opcode(Token.JMP, 4002)
->>> core.put_a_field_mode(Token.IMMEDIATE, 4002)
->>> core.put_a_field_val(2000, 4002)
+>>> core.put_instr(Token.JMP, Token.IMMEDIATE, 2000, Token.NULL, Token.NULL, 4002)
 >>> core.print_instruction(4002)
 JMP #2000
 >>> next_address = interpreter.execute(4002)
@@ -224,6 +234,23 @@ class Interpreter:
         else:
             return address + 1
 
+    def __get_direct_address(self, direct_val, address):
+        """
+        Resolve the absolute address pointed to by the direct value,
+        relative to the specified address
+
+        :param direct_val: A direct addressing mode value
+        :param address: The address from which to calculate the address being
+        pointed to
+
+        :return: The absolute address which is being pointed to
+        """
+
+        if address < 0 or address >= self.__core.coresize:
+            raise IndexError('Invalid address specified')
+
+        return (direct_val + address) % self.__core.coresize
+
     def __execute_add(self, address):
         """
         Executes the ADD instruction.
@@ -247,7 +274,7 @@ class Interpreter:
 
             elif b_mode == Token.DIRECT:
                 # Add A-field to instruction pointed to by B-field
-                dest_address = (address + b_val) % self.__core.coresize
+                dest_address = self.__get_direct_address(b_val, address)
                 b_val = self.__core.b_field_val(dest_address)
                 self.__core.put_b_field_val(b_val + a_val, dest_address)
 
@@ -258,7 +285,7 @@ class Interpreter:
         elif a_mode == Token.DIRECT:
             if b_mode == Token.IMMEDIATE:
                 # Add instruction pointed to by A-field to B-field
-                src_address = (address + a_val) % self.__core.coresize
+                src_address = self.__get_direct_address(a_val, address)
                 src_b_val = self.__core.b_field_val(src_address)
                 self.__core.put_b_field_val(b_val + src_b_val, address)
 
@@ -300,7 +327,7 @@ class Interpreter:
             return self.__core.a_field_val(address)
 
         elif a_mode == Token.DIRECT:
-            dest_address = (address + a_val) % self.__core.coresize
+            dest_address = self.__get_direct_address(a_val, address)
             return self.__core.a_field_val(dest_address)
 
         else:
@@ -324,43 +351,73 @@ class Interpreter:
 
         if a_mode == Token.IMMEDIATE:
             if b_mode == Token.IMMEDIATE:
-                # Put A-field into B-field
                 self.__core.put_b_field_val(a_val, address)
 
             elif b_mode == Token.DIRECT:
-                # Put A-field into instruction pointed to by B-field
-                dest_address = (address + b_val) % self.__core.coresize
+                dest_address = self.__get_direct_address(b_val, address)
                 self.__core.put_b_field_val(a_val, dest_address)
 
             elif b_mode == Token.INDIRECT:
-                # TODO
-                pass
+                intermediate_address = self.__get_direct_address(b_val, address)
+                intermediate_b_val = self.__core.b_field_val(intermediate_address)
+                dest_address = self.__get_direct_address(b_val + intermediate_b_val, address)
+                self.__core.put_b_field_val(a_val, dest_address)
 
         elif a_mode == Token.DIRECT:
+            src_address = self.__get_direct_address(a_val, address)
+
             if b_mode == Token.IMMEDIATE:
-                # Put instruction pointed to by A-field into B-field
-                src_address = (address + a_val) % self.__core.coresize
                 b_val = self.__core.b_field_val(src_address)
                 self.__core.put_b_field_val(b_val, address)
 
             elif b_mode == Token.DIRECT:
-                # Move instruction pointed to by A-field into instruction
-                # pointed to by B-field
-                dest_address = (address + b_val) % self.__core.coresize
-                self.__core.put_instr(Token.MOV, a_mode, a_val, b_mode, b_val, dest_address)
+                dest_address = self.__get_direct_address(b_val, address)
+                self.__core.put_instr(self.__core.opcode(src_address),
+                                      self.__core.a_field_mode(src_address),
+                                      self.__core.a_field_val(src_address),
+                                      self.__core.b_field_mode(src_address),
+                                      self.__core.b_field_val(src_address),
+                                      dest_address)
 
             elif b_mode == Token.INDIRECT:
-                pass
+                intermediate_address = self.__get_direct_address(b_val, address)
+                intermediate_b_val = self.__core.b_field_val(intermediate_address)
+                dest_address = self.__get_direct_address(b_val + intermediate_b_val, address)
+                self.__core.put_instr(self.__core.opcode(src_address),
+                                      self.__core.a_field_mode(src_address),
+                                      self.__core.a_field_val(src_address),
+                                      self.__core.b_field_mode(src_address),
+                                      self.__core.b_field_val(src_address),
+                                      dest_address)
 
         else:  # A-field is INDIRECT
+            intermediate_address = self.__get_direct_address(a_val, address)
+            intermediate_a_val = self.__core.a_field_val(intermediate_address)
+            src_address = self.__get_direct_address(a_val + intermediate_a_val, address)
+
             if b_mode == Token.IMMEDIATE:
-                pass
+                src_a_val = self.__core.a_field_val(src_address)
+                self.__core.put_b_field_val(src_a_val, address)
 
             elif b_mode == Token.DIRECT:
-                pass
+                dest_address = self.__get_direct_address(b_val, address)
+                self.__core.put_instr(self.__core.opcode(src_address),
+                                      self.__core.a_field_mode(src_address),
+                                      self.__core.a_field_val(src_address),
+                                      self.__core.b_field_mode(src_address),
+                                      self.__core.b_field_val(src_address),
+                                      dest_address)
 
             elif b_mode == Token.INDIRECT:
-                pass
+                intermediate_address = self.__get_direct_address(b_val, address)
+                intermediate_b_val = self.__core.b_field_val(intermediate_address)
+                dest_address = self.__get_direct_address(b_val + intermediate_b_val, address)
+                self.__core.put_instr(self.__core.opcode(src_address),
+                                      self.__core.a_field_mode(src_address),
+                                      self.__core.a_field_val(src_address),
+                                      self.__core.b_field_mode(src_address),
+                                      self.__core.b_field_val(src_address),
+                                      dest_address)
 
         # Return the next instruction address
         return self.__next(address)
