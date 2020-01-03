@@ -267,31 +267,50 @@ class Interpreter:
 
         if a_mode == Token.IMMEDIATE:
             if b_mode == Token.IMMEDIATE:
-                # Add A-field to B-field
                 self.__core.put_b_field_val(b_val + a_val, address)
 
             elif b_mode == Token.DIRECT:
-                # Add A-field to instruction pointed to by B-field
                 dest_address = self.__get_direct_address(b_val, address)
                 b_val = self.__core.b_field_val(dest_address)
                 self.__core.put_b_field_val(b_val + a_val, dest_address)
 
             elif b_mode == Token.INDIRECT:
-                # TODO
-                pass
+                intermediate_address = self.__get_direct_address(b_val, address)
+                intermediate_b_val = self.__core.b_field_val(intermediate_address)
+                dest_address = self.__get_direct_address(b_val + intermediate_b_val, address)
+                b_val = self.__core.b_field_val(dest_address)
+                self.__core.put_b_field_val(b_val + a_val, dest_address)
 
         elif a_mode == Token.DIRECT:
+            src_address = self.__get_direct_address(a_val, address)
+            src_b_val = self.__core.b_field_val(src_address)
+
             if b_mode == Token.IMMEDIATE:
-                # Add instruction pointed to by A-field to B-field
-                src_address = self.__get_direct_address(a_val, address)
-                src_b_val = self.__core.b_field_val(src_address)
                 self.__core.put_b_field_val(b_val + src_b_val, address)
 
             elif b_mode == Token.DIRECT:
-                pass
+                # Add both fields of source to both fields of destination
+                src_a_val = self.__core.a_field_val(src_address)
+
+                dest_address = self.__get_direct_address(b_val, address)
+
+                a_val = self.__core.a_field_val(dest_address)
+                b_val = self.__core.b_field_val(dest_address)
+                self.__core.put_a_field_val(a_val + src_a_val, dest_address)
+                self.__core.put_b_field_val(b_val + src_b_val, dest_address)
 
             elif b_mode == Token.INDIRECT:
-                pass
+                # Add both fields of source to both fields of destination
+                src_a_val = self.__core.a_field_val(src_address)
+
+                intermediate_address = self.__get_direct_address(b_val, address)
+                intermediate_b_val = self.__core.b_field_val(intermediate_address)
+                dest_address = self.__get_direct_address(b_val + intermediate_b_val, address)
+
+                a_val = self.__core.a_field_val(dest_address)
+                b_val = self.__core.b_field_val(dest_address)
+                self.__core.put_a_field_val(a_val + src_a_val, dest_address)
+                self.__core.put_b_field_val(b_val + src_b_val, dest_address)
 
         else:  # A-field is INDIRECT
             if b_mode == Token.IMMEDIATE:
