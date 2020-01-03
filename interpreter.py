@@ -49,57 +49,55 @@ null values).
 >>> from interpreter import Interpreter
 >>> core = Core()
 >>> interpreter = Interpreter(core, [4000])
->>> # Test processing of MOV $0, $1 instruction
->>> core.put_instr(Token.MOV, Token.DIRECT, 0, Token.DIRECT, 1, 4000)
->>> core.print_instruction(4000)
-MOV 0, 1
->>> core.print_instruction(4001)
-NULL
->>> next_address = interpreter.execute(4000)
->>> print(next_address)
-4001
->>> # Expect entire instruction to be copied to next address
->>> core.print_instruction(4001)
-MOV 0, 1
->>> # Test processing of MOV #0, #1
->>> core.put_a_field_mode(Token.IMMEDIATE, 4001)
->>> core.put_b_field_mode(Token.IMMEDIATE, 4001)
->>> core.print_instruction(4001)
-MOV #0, #1
->>> next_address = interpreter.execute(4001)
->>> print(next_address)
-4002
->>> # Expect A-field to be copied to B-field
->>> core.print_instruction(4001)
-MOV #0, #0
->>> # Test processing of MOV -1, #0
->>> core.put_a_field_mode(Token.DIRECT, 4001)
->>> core.put_a_field_val(-1, 4001)
->>> core.print_instruction(4001)
-MOV -1, #0
->>> next_address = interpreter.execute(4001)
->>> # Expect B-field of prior instruction to be
->>> # copied to B-field of this instruction
->>> core.print_instruction(4001)
-MOV -1, #1
->>> # Test processing of MOV 2, @2
->>> core.put_instr(Token.MOV, Token.DIRECT, 2, Token.INDIRECT, 2, 5000)
->>> core.print_instruction(5000)
-MOV 2, @2
->>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 4, 5002)
->>> next_address = interpreter.execute(5000)
->>> core.print_instruction(5006)
-DAT #0, #4
->>> # Test processing of MOV @-2, 0
->>> core.put_instr(Token.MOV, Token.INDIRECT, -2, Token.DIRECT, 0, 6000)
->>> core.print_instruction(6000)
-MOV @-2, 0
->>> core.put_instr(Token.DAT, Token.IMMEDIATE, -1, Token.IMMEDIATE, 0, 5998)
->>> core.put_instr(Token.DAT, Token.IMMEDIATE, 4, Token.IMMEDIATE, 0, 5997)
->>> next_address = interpreter.execute(6000)
->>> core.print_instruction(6000)
-DAT #4, #0
->>> # Test processing of JMP #2000
+>>>
+>>> # Test MOV instruction for all combinations of
+>>> # addressing mode
+>>> core.put_instr(Token.MOV, Token.IMMEDIATE, 1, Token.IMMEDIATE, 0, 2000)
+>>> next_address = interpreter.execute(2000)
+>>> core.print_instruction(2000)
+MOV #1, #1
+>>> core.put_instr(Token.MOV, Token.IMMEDIATE, 1, Token.DIRECT, 99, 2001)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 0, 2100)
+>>> next_address = interpreter.execute(2001)
+>>> core.print_instruction(2100)
+DAT #0, #1
+>>> core.put_instr(Token.MOV, Token.IMMEDIATE, 1, Token.INDIRECT, 198, 2002)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 100, 2200)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 4, Token.IMMEDIATE, 0, 2300)
+>>> next_address = interpreter.execute(2002)
+>>> core.print_instruction(2300)
+DAT #4, #1
+>>> core.put_instr(Token.MOV, Token.DIRECT, 98, Token.IMMEDIATE, 0, 2003)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 3, 2101)
+>>> next_address = interpreter.execute(2003)
+>>> core.print_instruction(2003)
+MOV 98, #3
+>>> core.put_instr(Token.MOV, Token.DIRECT, 0, Token.DIRECT, 98, 2004)
+>>> next_address = interpreter.execute(2004)
+>>> core.print_instruction(2102)
+MOV 0, 98
+>>> core.put_instr(Token.MOV, Token.DIRECT, 0, Token.INDIRECT, 196, 2005)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 0, Token.IMMEDIATE, 100, 2201)
+>>> next_address = interpreter.execute(2005)
+>>> core.print_instruction(2301)
+MOV 0, @196
+>>> core.put_instr(Token.MOV, Token.INDIRECT, 394, Token.IMMEDIATE, 0, 2006)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 100, Token.IMMEDIATE, 0, 2400)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 39, Token.IMMEDIATE, 0, 2500)
+>>> next_address = interpreter.execute(2006)
+>>> core.print_instruction(2006)
+MOV @394, #39
+>>> core.put_instr(Token.MOV, Token.INDIRECT, 393, Token.DIRECT, 593, 2007)
+>>> next_address = interpreter.execute(2007)
+>>> core.print_instruction(2600)
+DAT #39, #0
+>>> core.put_instr(Token.MOV, Token.INDIRECT, 392, Token.INDIRECT, 692, 2008)
+>>> core.put_instr(Token.DAT, Token.IMMEDIATE, 100, Token.IMMEDIATE, 100, 2700)
+>>> next_address = interpreter.execute(2008)
+>>> core.print_instruction(2800)
+DAT #39, #0
+>>>
+>>> # Test processing of JMP
 >>> core.put_instr(Token.JMP, Token.IMMEDIATE, 2000, Token.NULL, Token.NULL, 4002)
 >>> core.print_instruction(4002)
 JMP #2000
